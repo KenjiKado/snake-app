@@ -1,0 +1,11 @@
+.grid-cell {
+    height: 20px;
+    width: 20px;
+    border: 1px solid #17a2b8;
+    &.grid-snake {
+        background-color: #000;
+    }
+    &.grid-snack {
+        background-color: #155724;
+    }
+}
