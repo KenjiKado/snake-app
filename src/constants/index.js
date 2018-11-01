@@ -18,12 +18,12 @@ export const KEY_CODES_MAPPING = {
 }
 export const LEVELS = {
     1: {
-        size: 40,
+        size: 20,
         speed: 1000,
         max: 10
     },
     2: {
-        size: 50,
+        size: 20,
         speed: 1000,
         max: 12
     },

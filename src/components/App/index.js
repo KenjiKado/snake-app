@@ -9,24 +9,26 @@ class App extends Component {
     constructor(props){
         super(props);
         this.state = INITIAL_STATE;
-        this.state.snake = this.rand(1);
-        this.state.snack = this.rand(2);
+        this.state.snake = this.rand();
+        this.state.snack = this.rand();
         this.createPlayfield = this.createPlayfield.bind(this);
         this.isPosition = this.isPosition.bind(this);
         this.addClasses = this.addClasses.bind(this);
         this.keyPress = this.keyPress.bind(this);
- 
         this.onInterval = this.onInterval.bind(this);
         this.rand = this.rand.bind(this);
+        this.moveSnake = this.moveSnake.bind(this);
+        this.eatSnack = this.eatSnack.bind(this);
+        this.canPerformMove = this.canPerformMove.bind(this);
+        this.getNewSnakeHead = this.getNewSnakeHead.bind(this);
+        this.onInterval = this.onInterval.bind(this);
     }
-    rand = (size) => {
+    rand = () => {
         let element = [];
-        for (let i = 1; i <= size; i++) {
             element.push({
                 x: Math.round(0 - 0.5 + Math.random() * (this.state.level.size-5 + 1)),
                 y: Math.round(0 - 0.5 + Math.random() * (this.state.level.size-5 + 1))
             })
-        }
         return element;
     }
     isPosition = (x, y, array) => {
@@ -38,7 +40,7 @@ class App extends Component {
         UP: (x,y) => ({x, y: y - 1}),
         BOTTOM: (x,y) => ({x, y: y + 1}),
         LEFT: (x,y) => ({x: x - 1, y}),
-        RIGHT: (x,y) => ({x: x + 1, y})
+        RIGHT: (x,y) =>({x: x + 1, y})
     }    
     addClasses = (x, y) => {
         return cs(
@@ -60,25 +62,53 @@ class App extends Component {
         return rows;
     }
     keyPress(code) {
-        if(KEY_CODES[code] !== this.state.position && KEY_CODES_MAPPING[code] !== this.state.position){
+        if(KEY_CODES[code] && KEY_CODES[code] !== this.state.position && KEY_CODES_MAPPING[code] !== this.state.position ){
             this.setState({
                 position: KEY_CODES[code]
             });
+        } 
+    }
+    getNewSnakeHead = (snake, direction) => {
+        if(direction){
+            return this.moving[direction](snake[0].x, snake[0].y);
         }
     }
-    gameOver () {
-        
+    moveSnake = (snake, direction, expand) => {
+        snake.unshift(this.getNewSnakeHead(snake, direction));
+        if (!expand) {
+            snake.pop();
+        }
+        return snake;
+    }
+    eatSnack = (snake, snack) => {
+        let expand = snake.filter((coords) => {
+            return coords.x-1 === snack[0].x-1 && coords.y-1 === snack[0].y-1;
+        }).length
+        if(expand) {
+            this.setState ({
+                snack: this.rand()
+            })
+        }
+        return Boolean(expand);
+    }
+    canPerformMove = (fieldSize, snake, direction) => {
+        if(!snake) {
+            return false;
+        }
+        let newHead = this.getNewSnakeHead(snake, direction);
+        return newHead.x >= 0 && newHead.x <= fieldSize && newHead.y >= 0 && newHead.y <= fieldSize;
     }
     onInterval() {
-        let snake = this.state.snake;
-        let element = this.moving[this.state.position](snake[0].x, snake[0].y);
-
-        snake.splice(-1 , 1)
-        snake = [element, ...snake]
-
-        this.setState({
-            snake: snake
-        })     
+        if(this.canPerformMove(this.state.level.size, this.state.snake, this.state.position)){
+            this.setState({
+                snake: this.moveSnake(this.state.snake, this.state.position, this.eatSnack(this.state.snake, this.state.snack))
+            })
+        } else {
+            this.gameOver();
+        }
+    }
+    gameOver = () => {
+        clearInterval(this.interval);
     }
     componentDidMount() {
         document.addEventListener("keydown", (event) => {
@@ -86,8 +116,11 @@ class App extends Component {
         });
         this.interval = setInterval(this.onInterval, this.state.level.speed);
     }
+    componentWillUnmount() {
+        clearInterval(this.interval);
+        //window.removeEventListener('keyup', this.onChangeDirection, false);
+      }
     render() {
-        console.log(this.state.position)
         return (
             <div className="container">
                 <div className="row">
