@@ -16,35 +16,11 @@ export const KEY_CODES_MAPPING = {
     39: "LEFT",
     40: "UP"
 }
-export const LEVELS = {
-    1: {
-        size: 20,
-        speed: 1000,
-        max: 10
-    },
-    2: {
-        size: 20,
-        speed: 1000,
-        max: 12
-    },
-    3: {
-        size: 55,
-        speed: 800,
-        max: 15
-    },
-    4: {
-        size: 60,
-        speed: 600,
-        max: 15
-    },
-    5: {
-        size: 80,
-        speed: 500,
-        max: 20
-    }
-}
 export const INITIAL_STATE = {
-    level: LEVELS[1],
+    level: {
+        size: 20,
+        speed: 600,
+    },
     position: DIRECTIONS.RIGHT,
     snake: [],
     snack: []
